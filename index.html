@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d18">
+<title>CoreLab | CPU Instruction Cycle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--bg:#080d18;--panel:#101827;--panel2:#131f32;--line:#26364c;--text:#edf4ff;--muted:#8fa2bc;--cyan:#69f0d0;--blue:#78a8ff;--purple:#b9a2ff;--orange:#ffcb8a;--green:#8ef0b3;--red:#ff8e9d;--mono:'DM Mono',Consolas,monospace;--sans:Manrope,Segoe UI,Arial,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;background-image:radial-gradient(ellipse at 10% 0%,#14304a55,transparent 35%),radial-gradient(ellipse at 100% 30%,#31245a33,transparent 30%)}
+button,input,select{font:inherit}button{cursor:pointer;transition:transform .18s,border-color .18s,background .18s}button:hover{transform:translateY(-1px)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.topbar{height:70px;border-bottom:1px solid #26364caa;display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100% - 1260px)/2));background:#080d18cc;backdrop-filter:blur(14px);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.04em;font-size:17px}.brand-mark{width:34px;height:34px;border-radius:11px;background:linear-gradient(140deg,var(--cyan),#78a8ff);display:grid;place-items:center;color:#08111e;font-size:18px;box-shadow:0 0 28px #69f0d033}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.12em;font-weight:600}.top-right{display:flex;align-items:center;gap:12px}.online{display:flex;align-items:center;gap:7px;color:var(--green);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.dot{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 10px #8ef0b3}
+.wrap{max-width:1260px;margin:auto;padding:34px 24px 60px}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);font-weight:800}.hero h1{font-size:clamp(30px,4vw,48px);letter-spacing:-.06em;line-height:1.08;margin:10px 0 13px}.hero h1 span{background:linear-gradient(90deg,var(--cyan),var(--blue),var(--purple));background-clip:text;color:transparent}.hero p{max-width:680px;color:var(--muted);margin:0;font-size:14px}.hero-tag{border:1px solid var(--line);border-radius:13px;padding:12px 15px;min-width:174px;background:#101827aa}.hero-tag strong{display:block;font-size:12px}.hero-tag span{font-size:11px;color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}.metric{background:linear-gradient(135deg,#121e30,#0d1524);border:1px solid var(--line);border-radius:15px;padding:16px 17px;position:relative;overflow:hidden}.metric:after{content:"";position:absolute;right:-18px;top:-24px;width:75px;height:75px;border-radius:50%;background:var(--glow,#69f0d0);opacity:.08;filter:blur(3px)}.metric-label{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-weight:800}.metric-value{font-family:var(--mono);font-size:25px;font-weight:500;margin-top:7px;letter-spacing:-.05em}.metric-note{font-size:10px;color:var(--muted);margin-top:2px}
+.workspace{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(310px,.78fr);gap:17px;align-items:start}.panel{background:linear-gradient(145deg,#121d2e,#0e1625);border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 15px 40px #00000012}.panel-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.panel-title{font-size:13px;font-weight:800;letter-spacing:-.02em}.panel-sub{font-size:10px;color:var(--muted);margin-top:3px}.section-number{font-family:var(--mono);color:var(--cyan);font-size:10px;margin-right:8px}.panel-body{padding:19px 20px}
+label{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:7px}input,select{width:100%;border:1px solid #30425b;border-radius:9px;background:#0a1220;color:var(--text);padding:10px 11px;min-height:41px;font-family:var(--mono);font-size:12px}input:hover,select:hover{border-color:#536986}.form-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:13px}.input-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:14px}.field-hint{font-size:10px;color:#657b98;margin-top:5px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}.btn{padding:10px 14px;border:1px solid #30425b;border-radius:9px;background:#1a2940;color:var(--text);font-size:11px;font-weight:800}.btn-primary{background:var(--cyan);color:#07131b;border-color:var(--cyan);box-shadow:0 5px 20px #69f0d01b}.btn-quiet{background:transparent}.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.stepper{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:18px 0}.stage{position:relative;text-align:left;border:1px solid var(--line);border-radius:12px;padding:13px 12px;background:#0b1321;min-height:88px;transition:.25s}.stage:before{content:"";height:2px;position:absolute;left:12px;right:12px;bottom:0;background:transparent}.stage.active{border-color:var(--cyan);background:linear-gradient(145deg,#12313a,#102130);box-shadow:inset 0 0 0 1px #69f0d016}.stage.active:before{background:var(--cyan)}.stage.done{border-color:#356f65;background:#102824}.stage-top{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;color:var(--muted)}.stage-icon{font-size:16px;color:var(--cyan)}.stage strong{display:block;margin-top:8px;font-size:12px}.stage small{color:var(--muted);font-size:10px}
+.cpu-visual{padding:18px;border:1px solid #273b54;border-radius:14px;background:linear-gradient(140deg,#0a1321,#0d1b2a);position:relative;overflow:hidden}.visual-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.visual-head strong{font-size:11px}.visual-head span{font-family:var(--mono);font-size:10px;color:var(--muted)}.cpu-flow{display:grid;grid-template-columns:1fr 30px 1fr;gap:7px;align-items:stretch}.block{border:1px solid #2c405a;border-radius:11px;padding:14px 10px;text-align:center;background:#111d30;min-height:105px;display:flex;flex-direction:column;justify-content:center;transition:.25s}.block.active{border-color:var(--orange);box-shadow:0 0 0 1px #ffcb8a26,0 0 25px #ffcb8a0a;background:#25251f}.block .icon{font-size:21px;margin-bottom:7px}.block strong{font-size:11px}.block small{font-size:9px;color:var(--muted);margin-top:4px}.flow-arrow{display:grid;place-items:center;color:#617894;font-size:19px}.flow-arrow.active{color:var(--cyan);text-shadow:0 0 12px #69f0d0}
+.bus{display:flex;align-items:center;justify-content:center;gap:9px;color:#607895;font-family:var(--mono);font-size:9px;margin:12px 0}.bus:before,.bus:after{content:"";height:1px;background:#293b53;flex:1}
+.status-box{display:flex;gap:12px;padding:14px;border:1px solid #2a4055;border-radius:12px;background:#0b1422;margin-top:14px}.status-icon{flex:0 0 32px;height:32px;border-radius:10px;background:#17333b;color:var(--cyan);display:grid;place-items:center;font-size:16px}.status-label{font-size:9px;color:var(--cyan);font-weight:800;text-transform:uppercase;letter-spacing:.14em}.status-text{font-size:12px;margin-top:3px;color:#d6e1f0}
+.regs{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.reg{border:1px solid #26374e;background:#0b1422;border-radius:11px;padding:12px;min-width:0}.reg-head{display:flex;align-items:center;justify-content:space-between;gap:5px}.reg-name{font-size:10px;color:var(--muted);font-weight:700}.reg-symbol{font-family:var(--mono);font-size:9px;color:#6b86a5}.reg-val{font-family:var(--mono);font-size:21px;margin-top:8px;overflow-wrap:anywhere}.reg.changed{border-color:var(--cyan);box-shadow:inset 0 0 0 1px #69f0d016}.reg.changed .reg-val{color:var(--cyan)}.register-note{color:var(--muted);font-size:10px;margin-top:13px}
+.log-table{width:100%;border-collapse:collapse;font-size:10px}.log-table th{color:#8296b2;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:9px}.log-table th,.log-table td{text-align:left;padding:11px 8px;border-bottom:1px solid #24334a;vertical-align:top}.log-table tr:last-child td{border-bottom:0}.log-table td:first-child{font-family:var(--mono);color:var(--cyan);white-space:nowrap}.log-empty{color:var(--muted);padding:17px 8px!important}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin-top:17px}.info-list{display:grid;gap:12px}.info-item{display:flex;gap:11px}.info-num{width:27px;height:27px;flex:0 0 27px;border-radius:8px;display:grid;place-items:center;background:#1a2b40;color:var(--cyan);font-family:var(--mono);font-size:11px}.info-item strong{display:block;font-size:11px}.info-item p{color:var(--muted);font-size:10px;margin:3px 0 0}.instruction-chip{font-family:var(--mono);border:1px solid #30425b;background:#0b1422;padding:4px 7px;border-radius:6px;color:var(--purple);font-size:10px}
+.footer{display:flex;justify-content:space-between;gap:12px;margin-top:27px;padding-top:17px;border-top:1px solid var(--line);color:#637894;font-size:10px}.footer strong{color:#a8b8cd}
+.toast{font-size:10px;color:var(--orange);margin-top:10px;min-height:15px}
+@media(max-width:900px){.workspace{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}.hero-tag{display:none}.metrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.topbar{padding:0 16px}.top-right .online{display:none}.wrap{padding:24px 13px 40px}.hero h1{font-size:34px}.metrics{gap:8px}.metric{padding:12px}.metric-value{font-size:21px}.panel-head,.panel-body{padding-left:14px;padding-right:14px}.form-grid{grid-template-columns:1fr 1fr}.input-grid{gap:7px}.input-grid input{padding:8px 6px}.stepper{gap:6px}.stage{padding:10px 8px;min-height:82px}.cpu-flow{grid-template-columns:1fr 20px 1fr}.block{padding:10px 5px}.bottom-grid{grid-template-columns:1fr}.footer{flex-direction:column}.btn{padding:10px 11px}}
+</style>
+</head>
+<body>
+<nav class="topbar">
+ <div class="brand"><div class="brand-mark">⌘</div><div>CORELAB<small>COMPUTER ARCHITECTURE LAB</small></div></div>
+ <div class="top-right"><span class="online"><span class="dot"></span> Simulator ready</span><span class="instruction-chip">COA / CO5</span></div>
+</nav>
+<main class="wrap">
+ <section class="hero">
+  <div><div class="eyebrow">Interactive learning environment</div><h1>Inside the <span>CPU cycle.</span></h1><p>Watch an instruction move through Fetch, Decode and Execute. Change register values, step through the processor workflow, and inspect how each operation changes the machine state.</p></div>
+  <div class="hero-tag"><strong>MICRO PROJECT · SY CSE</strong><span>Computer Organization & Architecture</span></div>
+ </section>
+ <section class="metrics">
+  <div class="metric" style="--glow:#69f0d0"><div class="metric-label">Cycle progress</div><div class="metric-value" id="progress">0 / 3</div><div class="metric-note">Instruction stages completed</div></div>
+  <div class="metric" style="--glow:#78a8ff"><div class="metric-label">Current opcode</div><div class="metric-value" id="opcodeMetric">ADD</div><div class="metric-note">Selected instruction</div></div>
+  <div class="metric" style="--glow:#b9a2ff"><div class="metric-label">Program counter</div><div class="metric-value" id="pcMetric">0100</div><div class="metric-note">Next instruction address</div></div>
+  <div class="metric" style="--glow:#ffcb8a"><div class="metric-label">Execution state</div><div class="metric-value" id="stateMetric" style="font-size:18px">READY</div><div class="metric-note" id="stateNote">Waiting for input</div></div>
+ </section>
+ <div class="workspace">
+  <section class="panel">
+   <div class="panel-head"><div><div class="panel-title"><span class="section-number">01</span>Instruction setup</div><div class="panel-sub">Configure the instruction and initial machine values</div></div><span class="instruction-chip">INPUT</span></div>
+   <div class="panel-body">
+    <div class="form-grid">
+     <div><label for="instruction">Instruction / opcode</label><select id="instruction"><option value="ADD">ADD A, B</option><option value="SUB">SUB A, B</option><option value="MOV">MOV A, B</option><option value="LOAD">LOAD A, [M]</option><option value="STORE">STORE A, [M]</option></select></div>
+     <div><label for="startpc">Program counter (decimal)</label><input id="startpc" type="number" min="0" max="65535" value="100"></div>
+    </div>
+    <div class="input-grid">
+     <div><label for="aval">Register A</label><input id="aval" type="number" min="0" max="255" value="12"><div class="field-hint">0–255</div></div>
+     <div><label for="bval">Register B</label><input id="bval" type="number" min="0" max="255" value="5"><div class="field-hint">0–255</div></div>
+     <div><label for="memval">Memory M</label><input id="memval" type="number" min="0" max="255" value="20"><div class="field-hint">0–255</div></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" id="run">▶ &nbsp; Run cycle</button><button class="btn" id="next">Next step &nbsp;→</button><button class="btn btn-quiet" id="reset">↺ Reset</button></div>
+    <div class="toast" id="toast">Tip: use Next step to understand each stage at your own pace.</div>
+    <div class="stepper">
+     <div class="stage active" id="s0"><div class="stage-top"><span>PHASE 01</span><span class="stage-icon">↓</span></div><strong>Fetch</strong><small>Retrieve instruction</small></div>
+     <div class="stage" id="s1"><div class="stage-top"><span>PHASE 02</span><span class="stage-icon">⌕</span></div><strong>Decode</strong><small>Interpret opcode</small></div>
+     <div class="stage" id="s2"><div class="stage-top"><span>PHASE 03</span><span class="stage-icon">ϟ</span></div><strong>Execute</strong><small>Perform operation</small></div>
+    </div>
+    <div class="cpu-visual">
+     <div class="visual-head"><strong>PROCESSOR DATA PATH</strong><span>LIVE VIEW / <span id="liveStage">IDLE</span></span></div>
+     <div class="cpu-flow">
+      <div class="block" id="memoryUnit"><div class="icon">▤</div><strong>Main memory</strong><small>Instruction + data</small></div>
+      <div class="flow-arrow" id="arrow1">⇄</div>
+      <div class="block" id="cpuUnit"><div class="icon">▦</div><strong>CPU core</strong><small>Control unit · ALU · Registers</small></div>
+     </div>
+     <div class="bus">SYSTEM BUS · ADDRESS / DATA / CONTROL</div>
+     <div class="status-box"><div class="status-icon" id="statusIcon">⌁</div><div><div class="status-label" id="phase">Ready to begin</div><div class="status-text" id="explanation">Select an instruction, then run the cycle or advance one step at a time.</div></div></div>
+    </div>
+   </div>
+  </section>
+  <aside class="panel">
+   <div class="panel-head"><div><div class="panel-title"><span class="section-number">02</span>CPU register bank</div><div class="panel-sub">Register values update as the cycle progresses</div></div><span class="instruction-chip">REGISTERS</span></div>
+   <div class="panel-body">
+    <div class="regs">
+     <div class="reg" id="regpc"><div class="reg-head"><span class="reg-name">Program Counter</span><span class="reg-symbol">PC</span></div><div class="reg-val" id="pc">100</div></div>
+     <div class="reg" id="regir"><div class="reg-head"><span class="reg-name">Instruction Register</span><span class="reg-symbol">IR</span></div><div class="reg-val" id="ir">—</div></div>
+     <div class="reg" id="regA"><div class="reg-head"><span class="reg-name">General register</span><span class="reg-symbol">A</span></div><div class="reg-val" id="ra">12</div></div>
+     <div class="reg" id="regB"><div class="reg-head"><span class="reg-name">General register</span><span class="reg-symbol">B</span></div><div class="reg-val" id="rb">5</div></div>
+     <div class="reg" id="regM"><div class="reg-head"><span class="reg-name">Memory location</span><span class="reg-symbol">M</span></div><div class="reg-val" id="rm">20</div></div>
+     <div class="reg" id="regR"><div class="reg-head"><span class="reg-name">Result / accumulator</span><span class="reg-symbol">OUT</span></div><div class="reg-val" id="result">—</div></div>
+    </div>
+    <div class="register-note">Values are displayed in decimal. Arithmetic results wrap to an 8-bit range (0–255) in this simplified model.</div>
+    <div style="height:1px;background:var(--line);margin:19px 0"></div>
+    <div class="panel-title" style="margin-bottom:12px">Instruction reference</div>
+    <div class="info-list">
+     <div class="info-item"><div class="info-num">+</div><div><strong>ADD A, B</strong><p>Add B to A and store the result in A.</p></div></div>
+     <div class="info-item"><div class="info-num">−</div><div><strong>SUB A, B</strong><p>Subtract B from A and store the 8-bit result in A.</p></div></div>
+     <div class="info-item"><div class="info-num">↗</div><div><strong>MOV A, B</strong><p>Copy the value in B into A.</p></div></div>
+     <div class="info-item"><div class="info-num">M</div><div><strong>LOAD / STORE</strong><p>Move data between register A and memory location M.</p></div></div>
+    </div>
+   </div>
+  </aside>
+ </div>
+ <div class="bottom-grid">
+  <section class="panel"><div class="panel-head"><div><div class="panel-title"><span class="section-number">03</span>Cycle event log</div><div class="panel-sub">A trace of each stage completed during execution</div></div><span class="instruction-chip">TRACE</span></div><div class="panel-body" style="padding-top:4px;padding-bottom:4px"><table class="log-table"><thead><tr><th>#</th><th>Stage</th><th>Operation / event</th></tr></thead><tbody id="log"><tr><td class="log-empty" colspan="3">No events yet. Start the cycle to generate a trace.</td></tr></tbody></table></div></section>
+  <section class="panel"><div class="panel-head"><div><div class="panel-title"><span class="section-number">04</span>Understand the cycle</div><div class="panel-sub">What the CPU does in each phase</div></div><span class="instruction-chip">LEARN</span></div><div class="panel-body"><div class="info-list">
+   <div class="info-item"><div class="info-num">01</div><div><strong>Fetch · Get the instruction</strong><p>The Program Counter identifies the instruction address. The CPU fetches the instruction into the Instruction Register, then advances the PC.</p></div></div>
+   <div class="info-item"><div class="info-num">02</div><div><strong>Decode · Understand the instruction</strong><p>The control unit interprets the opcode and identifies which registers or memory locations are needed.</p></div></div>
+   <div class="info-item"><div class="info-num">03</div><div><strong>Execute · Do the operation</strong><p>The ALU performs arithmetic or the CPU moves data. Updated register and memory values appear in the register bank.</p></div></div>
+  </div></div></section>
+ </div>
+ <footer class="footer"><span><strong>CORELAB</strong> · CPU Instruction Cycle Simulator</span><span>COA CO5 Micro Project · Built with HTML, CSS & JavaScript</span></footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);let stage=0,state={},entries=[],timer=null;
+function clamp(v,min,max){v=Number(v);return Number.isFinite(v)?Math.max(min,Math.min(max,Math.trunc(v))):min}
+function read(){return{pc:clamp($('startpc').value,0,65535),a:clamp($('aval').value,0,255),b:clamp($('bval').value,0,255),m:clamp($('memval').value,0,255),op:$('instruction').value,result:null,ir:'—',done:false,oldA:null,oldM:null}}
+function stop(){if(timer){clearInterval(timer);timer=null}if($('run'))$('run').innerHTML='▶ &nbsp; Run cycle'}
+function reset(){stop();state=read();stage=0;entries=[];render();$('phase').textContent='Ready to begin';$('explanation').textContent='Select an instruction, then run the cycle or advance one step at a time.';$('statusIcon').textContent='⌁';$('toast').textContent='Tip: use Next step to understand each stage at your own pace.'}
+function render(){
+$('pc').textContent=state.pc;$('ir').textContent=state.ir;$('ra').textContent=state.a;$('rb').textContent=state.b;$('rm').textContent=state.m;$('result').textContent=state.result===null?'—':state.result;
+$('progress').textContent=Math.min(stage,3)+' / 3';$('opcodeMetric').textContent=state.op;$('pcMetric').textContent=String(state.pc).padStart(4,'0');$('stateMetric').textContent=state.done?'COMPLETE':stage===0?'READY':stage===1?'FETCHED':'DECODED';$('stateNote').textContent=state.done?'Cycle finished':stage===0?'Waiting for input':stage===1?'Instruction fetched':stage===2?'Ready to execute':'';
+$('liveStage').textContent=state.done?'COMPLETE':stage===0?'IDLE':stage===1?'FETCH':stage===2?'DECODE':'';
+for(let i=0;i<3;i++)$('s'+i).className='stage'+(i<stage?' done':i===stage&&!state.done?' active':'');
+$('memoryUnit').classList.toggle('active',stage===0&&!state.done);$('cpuUnit').classList.toggle('active',stage>0&&!state.done);$('arrow1').classList.toggle('active',stage>0&&!state.done);
+['regpc','regir','regA','regB','regM','regR'].forEach(id=>$(id).classList.remove('changed'));
+if(stage>0)$('regir').classList.add('changed');if(stage===3){$('regR').classList.add('changed');if(state.op==='ADD'||state.op==='SUB'||state.op==='MOV'||state.op==='LOAD')$('regA').classList.add('changed');if(state.op==='STORE')$('regM').classList.add('changed');}
+$('next').disabled=state.done;$('run').disabled=state.done;
+$('log').innerHTML=entries.length?entries.map((e,i)=>`<tr><td>${String(i+1).padStart(2,'0')}</td><td>${e[0]}</td><td>${e[1]}</td></tr>`).join(''):'<tr><td class="log-empty" colspan="3">No events yet. Start the cycle to generate a trace.</td></tr>';
+}
+function step(){if(state.done)return;
+if(stage===0){let old=state.pc;state.ir=state.op+' '+(state.op==='LOAD'?'A, [M]':state.op==='STORE'?'A, [M]':'A, B');state.pc=Math.min(65535,state.pc+1);$('phase').textContent='Fetch complete';$('statusIcon').textContent='↓';$('explanation').textContent=`The CPU fetches “${state.ir}” from instruction address ${old} and places it in the Instruction Register (IR). The Program Counter advances to ${state.pc}.`;entries.push(['Fetch',`IR ← ${state.ir}; PC ${old} → ${state.pc}`]);stage=1;
+}else if(stage===1){let msg={ADD:'The control unit identifies ADD and selects registers A and B as operands.',SUB:'The control unit identifies SUB and selects registers A and B as operands.',MOV:'The control unit identifies MOV and selects B as the source and A as the destination.',LOAD:'The control unit identifies LOAD and prepares to read memory location M into A.',STORE:'The control unit identifies STORE and prepares to write A into memory location M.'};$('phase').textContent='Decode complete';$('statusIcon').textContent='⌕';$('explanation').textContent=msg[state.op]+' The instruction is now ready for execution.';entries.push(['Decode',`Opcode ${state.op} identified; operands prepared`]);stage=2;
+}else{let a=state.a,m=state.m;
+if(state.op==='ADD'){state.a=(state.a+state.b)&255;state.result=state.a;$('explanation').textContent=`The ALU adds ${a} + ${state.b} = ${state.a}. The 8-bit result is written to register A.`}
+if(state.op==='SUB'){state.a=(state.a-state.b+256)&255;state.result=state.a;$('explanation').textContent=`The ALU subtracts ${state.b} from ${a}. The 8-bit result is ${state.a}, written to register A.`}
+if(state.op==='MOV'){state.a=state.b;state.result=state.a;$('explanation').textContent=`The CPU copies ${state.b} from register B into register A.`}
+if(state.op==='LOAD'){state.a=state.m;state.result=state.a;$('explanation').textContent=`The CPU reads ${state.m} from memory location M and loads it into register A.`}
+if(state.op==='STORE'){state.m=state.a;state.result=state.m;$('explanation').textContent=`The CPU writes the value ${state.a} from register A into memory location M. Memory changes from ${m} to ${state.m}.`}
+$('phase').textContent='Execute complete · Cycle finished';$('statusIcon').textContent='ϟ';entries.push(['Execute',$('explanation').textContent]);stage=3;state.done=true;$('toast').textContent='Cycle complete. Change the inputs or instruction, then reset to run another example.'}
+render()}
+$('next').addEventListener('click',step);$('run').addEventListener('click',()=>{if(state.done)return;if(timer){stop();return}$('run').innerHTML='Ⅱ &nbsp; Pause';timer=setInterval(()=>{step();if(state.done)stop()},650)});$('reset').addEventListener('click',reset);['instruction','startpc','aval','bval','memval'].forEach(id=>$(id).addEventListener('change',reset));reset();
+</script>
+</body></html>
